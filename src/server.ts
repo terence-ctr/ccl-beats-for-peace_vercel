@@ -53,7 +53,8 @@ app.use(
             directives: {
               defaultSrc: ["'self'"],
               styleSrc: ["'self'", "'unsafe-inline'"],
-              scriptSrc: ["'self'", "'unsafe-eval'"], // Ajout de unsafe-eval pour Vercel
+              scriptSrc: ["'self'", "'unsafe-eval'", "'unsafe-inline'"], 
+              scriptSrcAttr: ["'unsafe-inline'"], // Ajout pour les event handlers inline
               imgSrc: ["'self'", 'data:', 'https:'],
               mediaSrc: ["'self'", 'blob:', 'data:'],
             },
