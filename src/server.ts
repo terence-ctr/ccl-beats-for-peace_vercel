@@ -100,9 +100,10 @@ const limiter = rateLimit({
 
 app.use('/api/', limiter);
 
-// Parser le corps des requêtes (augmenté pour supporter les images/vidéos base64)
-app.use(express.json({ limit: '100mb' }));
-app.use(express.urlencoded({ extended: true, limit: '100mb' }));
+// Parser le corps des requêtes (limité pour Vercel - 4.5MB max)
+const payloadLimit = process.env.VERCEL === '1' ? '4.5mb' : '100mb';
+app.use(express.json({ limit: payloadLimit }));
+app.use(express.urlencoded({ extended: true, limit: payloadLimit }));
 
 // Servir les fichiers statiques (uploads) avec headers CORS
 app.use('/uploads', (req, res, next) => {
@@ -204,7 +205,9 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 // Démarrer le serveur
 const startServer = async (): Promise<void> => {
   try {
-    // Tester la connexion à la base de données
+    console.log('🔍 Mode local - Vérification de la connexion à la base de données...');
+    
+    // Tester la connexion à la base de données (seulement en local)
     const dbConnected = await testConnection();
     if (!dbConnected) {
       console.error('❌ Impossible de démarrer le serveur: base de données non accessible');
@@ -237,7 +240,14 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-// Démarrer le serveur
-startServer();
+// Vérifier si nous sommes en environnement Vercel
+const isVercel = process.env.VERCEL === '1';
 
+// Démarrer le serveur uniquement si ce n'est pas Vercel
+if (!isVercel) {
+  startServer();
+}
+
+// Export pour Vercel et module.exports CommonJS
 export default app;
+module.exports = app;
