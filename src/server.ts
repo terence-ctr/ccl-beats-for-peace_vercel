@@ -53,8 +53,8 @@ app.use(
             directives: {
               defaultSrc: ["'self'"],
               styleSrc: ["'self'", "'unsafe-inline'"],
-              scriptSrc: ["'self'", "'unsafe-eval'", "'unsafe-inline'"], 
-              scriptSrcAttr: ["'unsafe-inline'"], // Ajout pour les event handlers inline
+              scriptSrc: ["'self'", "'unsafe-eval'", "'unsafe-inline'", "'unsafe-hashes'"], 
+              scriptSrcAttr: ["'unsafe-inline'"],
               imgSrc: ["'self'", 'data:', 'https:'],
               mediaSrc: ["'self'", 'blob:', 'data:'],
             },
