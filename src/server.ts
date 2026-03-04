@@ -136,9 +136,11 @@ app.use('/api/videos', videoRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/legal', legalRoutes);
 
-// Routes frontend (pages)
-app.use('/', callbackRoutes);
+// Routes debug (doit être avant les routes génériques)
 app.use('/debug', debugRoutes);
+
+// Routes frontend (pages) - doit être après les routes spécifiques
+app.use('/', callbackRoutes);
 
 // Route de santé
 app.get('/api/health', (req, res) => {
