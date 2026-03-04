@@ -22,6 +22,7 @@ import tiktokOAuthRoutes from './routes/tiktokOAuth';
 import uploadRoutes from './routes/uploads';
 import videoRoutes from './routes/videos';
 import adminRoutes from './routes/admin';
+import legalRoutes from './routes/legal';
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -131,6 +132,7 @@ app.use('/api/tiktok-oauth', tiktokOAuthRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/legal', legalRoutes);
 
 // Route de santé
 app.get('/api/health', (req, res) => {
