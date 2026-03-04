@@ -37,6 +37,9 @@ const PORT = process.env.PORT || 3001;
 // Vérifier si nous sommes en environnement Vercel
 const isVercel = process.env.VERCEL === '1';
 
+// Faire confiance aux proxies pour Vercel
+app.set('trust proxy', true);
+
 // Middleware de sécurité
 app.use(
   helmet(

@@ -4,13 +4,14 @@ import fs from 'fs';
 
 const router = Router();
 
-// Page d'accueil - servir tiktok-publish.html
+// Page d'accueil - servir public/index.html
 router.get('/', (req, res) => {
-  const htmlPath = path.join(__dirname, '../../tiktok-publish.html');
+  const htmlPath = path.join(__dirname, '../../public/index.html');
   
   if (fs.existsSync(htmlPath)) {
     res.sendFile(htmlPath);
   } else {
+    // Fallback: page d'accueil simple
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(`
       <!DOCTYPE html>
@@ -18,14 +19,22 @@ router.get('/', (req, res) => {
       <head>
         <title>CCL Beats for Peace</title>
         <style>
-          body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-          .error { color: #ff6b6b; }
+          body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #000; color: white; }
+          .container { max-width: 600px; margin: 0 auto; }
+          .btn { background: #ff6b6b; color: white; padding: 15px 30px; border: none; border-radius: 25px; text-decoration: none; display: inline-block; margin: 10px; }
+          .btn:hover { background: #ee5a24; }
         </style>
       </head>
       <body>
-        <h1 class="error">Page d'accueil non trouvée</h1>
-        <p>Le fichier tiktok-publish.html n'existe pas.</p>
-        <p><a href="/api/health">API Health</a></p>
+        <div class="container">
+          <h1>🎵 CCL Beats for Peace</h1>
+          <p>Application backend pour TikTok OAuth</p>
+          <div>
+            <a href="/api/health" class="btn">API Health</a>
+            <a href="/test/test-tiktok-auth" class="btn">Test TikTok</a>
+            <a href="/debug/oauth/debug" class="btn">Debug</a>
+          </div>
+        </div>
       </body>
       </html>
     `);
