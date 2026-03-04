@@ -15,18 +15,21 @@ export class TiktokOAuthController {
       return;
     }
 
-    // Paramètres OAuth TikTok
+    // Paramètres OAuth TikTok - Utiliser Login Kit URL
     const clientId = process.env.TIKTOK_CLIENT_ID;
-    const redirectUri = `${process.env.FRONTEND_URL}/tiktok/callback`;
+    const redirectUri = process.env.VERCEL === '1' 
+      ? 'https://ccl-beats-for-peace.vercel.app/tiktok/callback'
+      : `${process.env.FRONTEND_URL}/tiktok/callback`;
     const state = Buffer.from(JSON.stringify({ artisteId })).toString('base64');
-    const scopes = 'video.publish,user.info.basic';
+    const scopes = 'user.info.basic,user.info.profile,video.publish';
 
-    const tiktokAuthUrl = `https://www.tiktok.com/v2/auth/authorize?` +
-      `client_id=${clientId}&` +
-      `response_type=code&` +
-      `scope=${scopes}&` +
-      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-      `state=${state}`;
+    // URL correcte pour TikTok Login Kit
+    const tiktokAuthUrl = `https://www.tiktok.com/v2/auth/authorize/` +
+      `?client_key=${clientId}` +
+      `&scope=${encodeURIComponent(scopes)}` +
+      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+      `&response_type=code` +
+      `&state=${state}`;
 
     res.redirect(tiktokAuthUrl);
   }
@@ -50,11 +53,13 @@ export class TiktokOAuthController {
 
       // Échanger le code contre un access token
       const tokenParams = new URLSearchParams({
-        client_id: process.env.TIKTOK_CLIENT_ID || '',
+        client_key: process.env.TIKTOK_CLIENT_ID || '',
         client_secret: process.env.TIKTOK_CLIENT_SECRET || '',
         code: code as string,
         grant_type: 'authorization_code',
-        redirect_uri: `${process.env.FRONTEND_URL}/tiktok/callback`,
+        redirect_uri: process.env.VERCEL === '1' 
+          ? 'https://ccl-beats-for-peace.vercel.app/tiktok/callback'
+          : `${process.env.FRONTEND_URL}/tiktok/callback`,
       });
 
       const tokenResponse = await fetch('https://open.tiktokapis.com/v2/oauth/token/', {
