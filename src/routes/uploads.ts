@@ -1,26 +1,31 @@
 import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 import { authenticateToken, requireOrganizer } from '../middleware/auth';
 import { Request, Response } from 'express';
 
 const router = Router();
 
-// Créer le dossier uploads s'il n'existe pas
-const uploadsDir = path.join(__dirname, '../../uploads');
-const audioDir = path.join(uploadsDir, 'audio');
-
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-if (!fs.existsSync(audioDir)) {
-  fs.mkdirSync(audioDir, { recursive: true });
-}
+// Vérifier si nous sommes sur Vercel
+const isVercel = process.env.VERCEL === '1';
 
 // Configuration multer pour les fichiers audio
-const audioStorage = multer.diskStorage({
+const audioStorage = isVercel ? multer.memoryStorage() : multer.diskStorage({
   destination: (req, file, cb) => {
+    const uploadsDir = path.join(__dirname, '../../uploads');
+    const audioDir = path.join(uploadsDir, 'audio');
+    
+    // Créer les dossiers seulement si ce n'est pas Vercel
+    if (!isVercel) {
+      const fs = require('fs');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      if (!fs.existsSync(audioDir)) {
+        fs.mkdirSync(audioDir, { recursive: true });
+      }
+    }
+    
     cb(null, audioDir);
   },
   filename: (req, file, cb) => {
@@ -69,9 +74,23 @@ router.post('/audio', authenticateToken, requireOrganizer, uploadAudio.single('a
 
     console.log('📝 Détails du fichier reçu:');
     console.log('  - Nom original:', req.file.originalname);
-    console.log('  - Nom final:', req.file.filename);
-    console.log('  - Chemin:', req.file.path);
     console.log('  - Taille:', req.file.size);
+
+    // Sur Vercel, retourner une réponse de succès sans stockage physique
+    if (isVercel) {
+      res.status(200).json({
+        success: true,
+        message: 'Fichier reçu avec succès (mode Vercel)',
+        data: {
+          filename: req.file.originalname,
+          originalName: req.file.originalname,
+          size: req.file.size,
+          url: null, // Pas d'URL sur Vercel
+          note: 'Stockage physique désactivé sur Vercel'
+        }
+      });
+      return;
+    }
 
     const fileUrl = `/uploads/audio/${req.file.filename}`;
     
@@ -95,6 +114,19 @@ router.post('/audio', authenticateToken, requireOrganizer, uploadAudio.single('a
 router.delete('/audio/:filename', authenticateToken, requireOrganizer, async (req: Request, res: Response) => {
   try {
     const { filename } = req.params;
+    
+    // Sur Vercel, retourner un message indiquant que l'opération n'est pas supportée
+    if (isVercel) {
+      res.status(200).json({ 
+        success: true, 
+        message: 'Suppression non applicable sur Vercel (stockage en mémoire uniquement)' 
+      });
+      return;
+    }
+
+    const fs = require('fs');
+    const uploadsDir = path.join(__dirname, '../../uploads');
+    const audioDir = path.join(uploadsDir, 'audio');
     const filePath = path.join(audioDir, filename);
     
     if (fs.existsSync(filePath)) {
@@ -111,7 +143,22 @@ router.delete('/audio/:filename', authenticateToken, requireOrganizer, async (re
 // Lister les fichiers audio
 router.get('/audio', authenticateToken, requireOrganizer, async (req: Request, res: Response) => {
   try {
-    const files = fs.readdirSync(audioDir).map(filename => ({
+    // Sur Vercel, retourner une liste vide
+    if (isVercel) {
+      res.status(200).json({ 
+        success: true, 
+        data: { 
+          files: [],
+          note: 'Stockage physique désactivé sur Vercel'
+        } 
+      });
+      return;
+    }
+
+    const fs = require('fs');
+    const uploadsDir = path.join(__dirname, '../../uploads');
+    const audioDir = path.join(uploadsDir, 'audio');
+    const files = fs.readdirSync(audioDir).map((filename: string) => ({
       filename,
       url: `/uploads/audio/${filename}`,
       size: fs.statSync(path.join(audioDir, filename)).size

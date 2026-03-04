@@ -30,6 +30,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Vérifier si nous sommes en environnement Vercel
+const isVercel = process.env.VERCEL === '1';
+
 // Middleware de sécurité
 app.use(
   helmet(
@@ -106,11 +109,13 @@ app.use(express.json({ limit: payloadLimit }));
 app.use(express.urlencoded({ extended: true, limit: payloadLimit }));
 
 // Servir les fichiers statiques (uploads) avec headers CORS
-app.use('/uploads', (req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-  next();
-}, express.static(path.join(__dirname, '..', 'uploads')));
+if (!isVercel) {
+  app.use('/uploads', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  }, express.static(path.join(__dirname, '..', 'uploads')));
+}
 
 // Routes API
 app.use('/api/auth', authRoutes);
@@ -239,9 +244,6 @@ process.on('SIGINT', () => {
   console.log('🛑 Signal SIGINT reçu, arrêt du serveur...');
   process.exit(0);
 });
-
-// Vérifier si nous sommes en environnement Vercel
-const isVercel = process.env.VERCEL === '1';
 
 // Démarrer le serveur uniquement si ce n'est pas Vercel
 if (!isVercel) {
