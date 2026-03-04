@@ -47,7 +47,7 @@ app.use(
             directives: {
               defaultSrc: ["'self'"],
               styleSrc: ["'self'", "'unsafe-inline'"],
-              scriptSrc: ["'self'"],
+              scriptSrc: ["'self'", "'unsafe-eval'"], // Ajout de unsafe-eval pour Vercel
               imgSrc: ["'self'", 'data:', 'https:'],
               mediaSrc: ["'self'", 'blob:', 'data:'],
             },
@@ -133,6 +133,11 @@ app.use('/api/uploads', uploadRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/legal', legalRoutes);
+
+// Route racine - redirection vers l'API
+app.get('/', (req, res) => {
+  res.redirect('/api/health');
+});
 
 // Route de santé
 app.get('/api/health', (req, res) => {
