@@ -23,6 +23,7 @@ import uploadRoutes from './routes/uploads';
 import videoRoutes from './routes/videos';
 import adminRoutes from './routes/admin';
 import legalRoutes from './routes/legal';
+import callbackRoutes from './routes/callback';
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -134,10 +135,8 @@ app.use('/api/videos', videoRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/legal', legalRoutes);
 
-// Route racine - redirection vers l'API
-app.get('/', (req, res) => {
-  res.redirect('/api/health');
-});
+// Routes frontend (pages)
+app.use('/', callbackRoutes);
 
 // Route de santé
 app.get('/api/health', (req, res) => {
