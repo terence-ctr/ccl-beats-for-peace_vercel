@@ -4,7 +4,7 @@ const router = Router();
 
 // Endpoint de test direct pour TikTok OAuth
 router.get('/test-tiktok-auth', (req, res) => {
-  const clientId = 'aw4htwnv8eqspu64'; // Votre client ID
+  const clientId = 'awth1iqf71f5qtrj'; // Nouveau client ID
   const redirectUri = 'https://ccl-beats-for-peace.vercel.app/tiktok/callback';
   const scopes = 'user.info.basic,user.info.profile,video.publish';
   const state = 'test-state-' + Date.now();
@@ -34,7 +34,7 @@ router.get('/test-tiktok-auth', (req, res) => {
       <h1>🧪 Test Authentification TikTok</h1>
       
       <div class="warning">
-        <strong>⚠️ Mode test:</strong> Utilise les credentials codés en dur pour diagnostiquer le problème
+        <p><strong>Client Key:</strong> ${clientId}</p> Utilise les credentials codés en dur pour diagnostiquer le problème
       </div>
 
       <div class="url">
