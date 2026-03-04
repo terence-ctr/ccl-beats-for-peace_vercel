@@ -1,6 +1,36 @@
 import { Router } from 'express';
+import path from 'path';
+import fs from 'fs';
 
 const router = Router();
+
+// Page d'accueil - servir tiktok-publish.html
+router.get('/', (req, res) => {
+  const htmlPath = path.join(__dirname, '../../tiktok-publish.html');
+  
+  if (fs.existsSync(htmlPath)) {
+    res.sendFile(htmlPath);
+  } else {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>CCL Beats for Peace</title>
+        <style>
+          body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+          .error { color: #ff6b6b; }
+        </style>
+      </head>
+      <body>
+        <h1 class="error">Page d'accueil non trouvée</h1>
+        <p>Le fichier tiktok-publish.html n'existe pas.</p>
+        <p><a href="/api/health">API Health</a></p>
+      </body>
+      </html>
+    `);
+  }
+});
 
 // Page de callback TikTok simple
 router.get('/tiktok/callback', (req, res) => {
