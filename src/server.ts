@@ -49,16 +49,7 @@ app.use(
           crossOriginResourcePolicy: { policy: 'cross-origin' },
         }
       : {
-          contentSecurityPolicy: {
-            directives: {
-              defaultSrc: ["'self'"],
-              styleSrc: ["'self'", "'unsafe-inline'"],
-              scriptSrc: ["'self'", "'unsafe-eval'", "'unsafe-inline'", "'unsafe-hashes'"], 
-              scriptSrcAttr: ["'unsafe-inline'"],
-              imgSrc: ["'self'", 'data:', 'https:'],
-              mediaSrc: ["'self'", 'blob:', 'data:'],
-            },
-          },
+          contentSecurityPolicy: false, // Désactiver CSP pour résoudre le problème
           crossOriginResourcePolicy: { policy: 'cross-origin' },
         }
   )
