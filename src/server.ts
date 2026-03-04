@@ -25,6 +25,7 @@ import adminRoutes from './routes/admin';
 import legalRoutes from './routes/legal';
 import callbackRoutes from './routes/callback';
 import debugRoutes from './routes/debug';
+import testAuthRoutes from './routes/testAuth';
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -138,6 +139,7 @@ app.use('/api/legal', legalRoutes);
 
 // Routes debug (doit être avant les routes génériques)
 app.use('/debug', debugRoutes);
+app.use('/test', testAuthRoutes);
 
 // Routes frontend (pages) - doit être après les routes spécifiques
 app.use('/', callbackRoutes);
