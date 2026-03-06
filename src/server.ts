@@ -30,6 +30,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Configuration pour Vercel - désactiver trust proxy pour éviter le warning
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', false);
+}
+
 // Middleware de sécurité
 app.use(
   helmet(
@@ -86,16 +91,21 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('combined'));
 }
 
-// Rate limiting
+// Rate limiting - configuré pour Vercel
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 200, // Limite chaque IP à 200 requêtes par minute
+  max: process.env.NODE_ENV === 'production' ? 1000 : 200, // Plus élevé en production
   message: {
     success: false,
     message: 'Trop de requêtes, veuillez réessayer plus tard.'
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req: any) => {
+    // Skip rate limiting pour les requêtes internes Vercel en production
+    return process.env.NODE_ENV === 'production' && 
+           (req.headers['user-agent']?.includes('vercel') || false);
+  }
 });
 
 app.use('/api/', limiter);
