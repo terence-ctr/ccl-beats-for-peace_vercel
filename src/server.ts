@@ -8,11 +8,6 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { testConnection } from './config/database';
 
-// Importer les routes existantes uniquement
-import debugRoutes from './routes/debug';
-import testAuthRoutes from './routes/testAuth';
-import callbackRoutes from './routes/callback';
-
 // Charger les variables d'environnement
 dotenv.config();
 
@@ -111,11 +106,7 @@ app.use('/uploads', (req, res, next) => {
   next();
 }, express.static(path.join(__dirname, '..', 'uploads')));
 
-// Routes API - uniquement celles qui existent
-app.use('/debug', debugRoutes);
-app.use('/test', testAuthRoutes);
-app.use('/', callbackRoutes);
-
+// Routes API - application minimale
 // Route de santé
 app.get('/api/health', (req, res) => {
   res.status(200).json({
