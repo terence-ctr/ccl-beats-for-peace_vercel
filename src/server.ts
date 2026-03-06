@@ -8,20 +8,10 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { testConnection } from './config/database';
 
-// Importer les routes
-import authRoutes from './routes/auth';
-import artistRoutes from './routes/artists';
-import eventRoutes from './routes/events';
-import voteRoutes from './routes/votes';
-import juryRoutes from './routes/jury';
-import notificationRoutes from './routes/notifications';
-import socialLinkRoutes from './routes/socialLinks';
-import scoreRoutes from './routes/scores';
-import tiktokRoutes from './routes/tiktok';
-import tiktokOAuthRoutes from './routes/tiktokOAuth';
-import uploadRoutes from './routes/uploads';
-import videoRoutes from './routes/videos';
-import adminRoutes from './routes/admin';
+// Importer les routes existantes uniquement
+import debugRoutes from './routes/debug';
+import testAuthRoutes from './routes/testAuth';
+import callbackRoutes from './routes/callback';
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -121,20 +111,10 @@ app.use('/uploads', (req, res, next) => {
   next();
 }, express.static(path.join(__dirname, '..', 'uploads')));
 
-// Routes API
-app.use('/api/auth', authRoutes);
-app.use('/api/artists', artistRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/votes', voteRoutes);
-app.use('/api/jury', juryRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/social-links', socialLinkRoutes);
-app.use('/api/scores', scoreRoutes);
-app.use('/api/tiktok', tiktokRoutes);
-app.use('/api/tiktok-oauth', tiktokOAuthRoutes);
-app.use('/api/uploads', uploadRoutes);
-app.use('/api/videos', videoRoutes);
-app.use('/api/admin', adminRoutes);
+// Routes API - uniquement celles qui existent
+app.use('/debug', debugRoutes);
+app.use('/test', testAuthRoutes);
+app.use('/', callbackRoutes);
 
 // Route de santé
 app.get('/api/health', (req, res) => {
