@@ -6,7 +6,6 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import path from 'path';
-import { testConnection } from './config/database';
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -185,12 +184,8 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 // Démarrer le serveur
 const startServer = async (): Promise<void> => {
   try {
-    // Tester la connexion à la base de données
-    const dbConnected = await testConnection();
-    if (!dbConnected) {
-      console.error('❌ Impossible de démarrer le serveur: base de données non accessible');
-      process.exit(1);
-    }
+    // Démarrer le serveur sans base de données
+    console.log('🚀 Serveur démarré sans base de données');
 
     // Démarrer le serveur
     app.listen(PORT, () => {
