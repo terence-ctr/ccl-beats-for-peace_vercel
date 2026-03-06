@@ -77,7 +77,7 @@ export class JuryInfoModel {
       ORDER BY ji.created_at DESC
     `;
 
-    const result = await query<JuryInfo>(sql);
+    const result = await query<JuryInfo>(sql, []);
     return result.rows;
   }
 

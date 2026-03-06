@@ -14,6 +14,7 @@ export interface DecisionsJury {
   };
   comments: string;
   decision: 'selected' | 'rejected' | 'pending';
+  score: number; // Score jury (0-50)
   finalized: boolean;
   created_at: string;
   updated_at: string;
@@ -31,13 +32,14 @@ export interface DecisionJuryRequest {
   };
   comments: string;
   decision: 'selected' | 'rejected' | 'pending';
+  score: number; // Score jury (0-50)
   jury_id?: number | string;
 }
 
 export class DecisionsJuryModel {
   // Créer ou mettre à jour une décision
   static async upsert(decisionData: DecisionJuryRequest, juryId: number | string): Promise<DecisionsJury> {
-    const { artiste_id, phase_id, criteria, comments, decision } = decisionData;
+    const { artiste_id, phase_id, criteria, comments, decision, score } = decisionData;
 
     // Vérifier si une décision existe déjà
     const existingDecision = await query<DecisionsJury>(
@@ -52,19 +54,35 @@ export class DecisionsJuryModel {
       decisionId = existingDecision.rows[0].id;
       await query(
         `UPDATE decisions_jury 
-         SET criteria = ?, comments = ?, decision = ?, finalized = false, updated_at = NOW() 
+         SET criteria = ?, comments = ?, decision = ?, score = ?, finalized = false, updated_at = NOW() 
          WHERE id = ?`,
-        [JSON.stringify(criteria), comments, decision, decisionId]
+        [JSON.stringify(criteria), comments, decision, score, decisionId]
       );
     } else {
       // Création
       const result = await query(
-        `INSERT INTO decisions_jury (jury_id, artiste_id, phase_id, criteria, comments, decision, finalized) 
-         VALUES (?, ?, ?, ?, ?, ?, false)`,
-        [juryId, artiste_id, phase_id, JSON.stringify(criteria), comments, decision]
+        `INSERT INTO decisions_jury (jury_id, artiste_id, phase_id, criteria, comments, decision, score, finalized) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, false)`,
+        [juryId, artiste_id, phase_id, JSON.stringify(criteria), comments, decision, score]
       );
-      if (!result.insertId) throw new Error('Erreur création décision');
-      decisionId = result.insertId;
+      
+      // Vérifier si l'insertion a réussi en vérifiant les affectedRows plutôt que insertId
+      if (!result.affectedRows || result.affectedRows === 0) {
+        throw new Error('Erreur création décision');
+      }
+      
+      // Récupérer l'ID de la décision insérée
+      const insertedDecision = await query(
+        `SELECT id FROM decisions_jury WHERE jury_id = ? AND artiste_id = ? AND phase_id = ? ORDER BY created_at DESC LIMIT 1`,
+        [juryId, artiste_id, phase_id]
+      );
+      
+      if (!insertedDecision.rows.length) {
+        throw new Error('Impossible de récupérer l\'ID de la décision créée');
+      }
+      
+      decisionId = insertedDecision.rows[0].id;
+      console.log('✅ Decision created with ID:', decisionId);
     }
 
     // Récupérer la décision mise à jour

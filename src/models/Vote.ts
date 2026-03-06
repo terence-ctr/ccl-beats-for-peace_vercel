@@ -6,10 +6,10 @@ export class VoteModel {
   static async create(voteData: VoteRequest, voterId: number | string): Promise<Vote> {
     const { artiste_id, phase_id } = voteData;
 
-    // Insérer le vote avec l'ID voter réel (pas d'identifiant unique)
+    // Insérer le vote avec l'ID voter réel et user_id, en utilisant l'auto-incrément
     const result = await query(
-      `INSERT INTO votes (voter_id, artiste_id, phase_id, vote_count) VALUES (?, ?, ?, 1)`,
-      [voterId, artiste_id, phase_id]
+      `INSERT INTO votes (voter_id, user_id, artiste_id, phase_id, vote_count) VALUES (?, ?, ?, ?, 1)`,
+      [voterId, voterId, artiste_id, phase_id]
     );
     
     if (!result.insertId) throw new Error('Erreur création vote');
@@ -33,17 +33,18 @@ export class VoteModel {
     console.log(`📊 Synchronisation vote: artiste=${artisteId}, phase=${phaseId}, count=${voteCount}`);
     
     // Mettre à jour la table artiste pour cohérence (priorité absolue)
-    try {
-      await query(`
-        UPDATE artiste 
-        SET total_votes = ?
-        WHERE id = ?
-      `, [voteCount, artisteId]);
-      console.log('✅ Mise à jour artiste réussie');
-    } catch (error) {
-      console.log('❌ Erreur mise à jour artiste:', error);
-      // Ne pas bloquer l'opération si la mise à jour de scores échoue
-    }
+    // Désactivé temporairement à cause d'un conflit de trigger
+    // try {
+    //   await query(`
+    //     UPDATE artiste 
+    //     SET total_votes = ?
+    //     WHERE id = ?
+    //   `, [voteCount, artisteId]);
+    //   console.log('✅ Mise à jour artiste réussie');
+    // } catch (error) {
+    //   console.log('❌ Erreur mise à jour artiste:', error);
+    //   // Ne pas bloquer l'opération si la mise à jour de scores échoue
+    // }
     
     // Mettre à jour la table scores (optionnel, avec gestion d'erreur)
     try {

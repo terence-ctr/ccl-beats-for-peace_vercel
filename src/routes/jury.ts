@@ -5,7 +5,7 @@ import { authenticateToken, requireJury, requireOrganizer } from '../middleware/
 const router = Router();
 
 // Routes spécifiques avant les routes paramétrées
-router.get('/my-notes', authenticateToken, JuryController.getJuryNotes as any);
+router.get('/my-notes', authenticateToken, JuryController.getArtistNotes as any);
 router.get('/my-decisions', authenticateToken, JuryController.getMyDecisions as any);
 router.get('/ranking/:phaseId', JuryController.getJuryRanking);
 

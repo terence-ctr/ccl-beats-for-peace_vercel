@@ -257,16 +257,18 @@ export class ArtisteModel {
   static async getStatistics(): Promise<any> {
     const sql = `
       SELECT 
-        statut,
+        a.statut,
         COUNT(*) as count,
-        COUNT(CASE WHEN discipline = ? THEN 1 END) as rap_count,
-        COUNT(CASE WHEN discipline = ? THEN 1 END) as slam_count,
-        COUNT(CASE WHEN discipline = ? THEN 1 END) as chant_count,
-        COUNT(CASE WHEN discipline = ? THEN 1 END) as danse_count,
-        COUNT(CASE WHEN discipline = ? THEN 1 END) as theatre_count,
-        COUNT(CASE WHEN discipline = ? THEN 1 END) as autre_count
-      FROM artiste
-      GROUP BY statut
+        COUNT(CASE WHEN a.discipline = ? THEN 1 END) as rap_count,
+        COUNT(CASE WHEN a.discipline = ? THEN 1 END) as slam_count,
+        COUNT(CASE WHEN a.discipline = ? THEN 1 END) as chant_count,
+        COUNT(CASE WHEN a.discipline = ? THEN 1 END) as danse_count,
+        COUNT(CASE WHEN a.discipline = ? THEN 1 END) as theatre_count,
+        COUNT(CASE WHEN a.discipline = ? THEN 1 END) as autre_count,
+        COALESCE(SUM(s.score_vote), 0) as score_vote
+      FROM artiste a
+      LEFT JOIN scores s ON a.id = s.artiste_id
+      GROUP BY a.statut
     `;
 
     const result = await query(sql, [

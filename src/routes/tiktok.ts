@@ -7,9 +7,6 @@ const router = Router();
 // Routes publiques
 router.get('/publications/:artisteId', TiktokController.getArtistPublications);
 
-// Route de publication sans authentification (pour développement)
-router.post('/publish-direct', TiktokController.publishVideoDirect as any);
-
 // Routes protégées - Jury uniquement
 router.post('/publish', authenticateToken, requireJury, TiktokController.publishVideo as any);
 

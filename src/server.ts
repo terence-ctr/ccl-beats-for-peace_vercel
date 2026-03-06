@@ -22,10 +22,6 @@ import tiktokOAuthRoutes from './routes/tiktokOAuth';
 import uploadRoutes from './routes/uploads';
 import videoRoutes from './routes/videos';
 import adminRoutes from './routes/admin';
-import legalRoutes from './routes/legal';
-import callbackRoutes from './routes/callback';
-import debugRoutes from './routes/debug';
-import testAuthRoutes from './routes/testAuth';
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -33,12 +29,6 @@ dotenv.config();
 // Créer l'application Express
 const app = express();
 const PORT = process.env.PORT || 3001;
-
-// Vérifier si nous sommes en environnement Vercel
-const isVercel = process.env.VERCEL === '1';
-
-// Faire confiance aux proxies pour Vercel
-app.set('trust proxy', true);
 
 // Middleware de sécurité
 app.use(
@@ -49,7 +39,15 @@ app.use(
           crossOriginResourcePolicy: { policy: 'cross-origin' },
         }
       : {
-          contentSecurityPolicy: false, // Désactiver CSP pour résoudre le problème
+          contentSecurityPolicy: {
+            directives: {
+              defaultSrc: ["'self'"],
+              styleSrc: ["'self'", "'unsafe-inline'"],
+              scriptSrc: ["'self'"],
+              imgSrc: ["'self'", 'data:', 'https:'],
+              mediaSrc: ["'self'", 'blob:', 'data:'],
+            },
+          },
           crossOriginResourcePolicy: { policy: 'cross-origin' },
         }
   )
@@ -102,19 +100,16 @@ const limiter = rateLimit({
 
 app.use('/api/', limiter);
 
-// Parser le corps des requêtes (limité pour Vercel - 4.5MB max)
-const payloadLimit = process.env.VERCEL === '1' ? '4.5mb' : '100mb';
-app.use(express.json({ limit: payloadLimit }));
-app.use(express.urlencoded({ extended: true, limit: payloadLimit }));
+// Parser le corps des requêtes (augmenté pour supporter les images/vidéos base64)
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 // Servir les fichiers statiques (uploads) avec headers CORS
-if (!isVercel) {
-  app.use('/uploads', (req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    next();
-  }, express.static(path.join(__dirname, '..', 'uploads')));
-}
+app.use('/uploads', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, '..', 'uploads')));
 
 // Routes API
 app.use('/api/auth', authRoutes);
@@ -130,14 +125,6 @@ app.use('/api/tiktok-oauth', tiktokOAuthRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/legal', legalRoutes);
-
-// Routes debug (doit être avant les routes génériques)
-app.use('/debug', debugRoutes);
-app.use('/test', testAuthRoutes);
-
-// Routes frontend (pages) - doit être après les routes spécifiques
-app.use('/', callbackRoutes);
 
 // Route de santé
 app.get('/api/health', (req, res) => {
@@ -217,9 +204,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 // Démarrer le serveur
 const startServer = async (): Promise<void> => {
   try {
-    console.log('🔍 Mode local - Vérification de la connexion à la base de données...');
-    
-    // Tester la connexion à la base de données (seulement en local)
+    // Tester la connexion à la base de données
     const dbConnected = await testConnection();
     if (!dbConnected) {
       console.error('❌ Impossible de démarrer le serveur: base de données non accessible');
@@ -252,11 +237,7 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-// Démarrer le serveur uniquement si ce n'est pas Vercel
-if (!isVercel) {
-  startServer();
-}
+// Démarrer le serveur
+startServer();
 
-// Export pour Vercel et module.exports CommonJS
 export default app;
-module.exports = app;

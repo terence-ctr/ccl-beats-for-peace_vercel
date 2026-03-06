@@ -135,6 +135,11 @@ export interface Vote {
 export interface JuryInfo {
   id: number;
   user_id: number;
+  nom?: string;
+  prenom?: string;
+  email?: string;
+  telephone?: string;
+  biographie?: string;
   instagram_url?: string;
   competences?: string;
   description?: string;
@@ -245,8 +250,10 @@ export interface VoteRequest {
 }
 
 export interface NoteJuryRequest {
-  artiste_id: string;
-  phase_id: string;
+  // Dans MySQL, ces colonnes sont des INT, mais beaucoup de code les manipule encore en string.
+  // On autorise donc string | number pour rester compatible tout en permettant le cast numérique.
+  artiste_id: string | number;
+  phase_id: string | number;
   note: number;
 }
 
